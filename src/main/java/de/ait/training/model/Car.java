@@ -1,24 +1,19 @@
 package de.ait.training.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
-@Entity //класс который уже имеет в базе данных свою таблицу
-@Table(name = "cars") //хотим такое имя
+@Entity
+@Table(name = "cars")
 public class Car {
-    @Id //это создает уникальный Id для автомобиля
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)//при попытке сохранить в базу данных с null он отсекает
+    @Column(nullable = false)
     private String color;
 
     @Column(nullable = false)

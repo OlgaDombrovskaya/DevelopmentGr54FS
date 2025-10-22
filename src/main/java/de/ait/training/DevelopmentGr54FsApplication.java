@@ -14,6 +14,5 @@ public class DevelopmentGr54FsApplication {
         log.info("Starting DevelopmentGr54FsApplication");
         SpringApplication.run(DevelopmentGr54FsApplication.class, args);
     }
-
 }
 

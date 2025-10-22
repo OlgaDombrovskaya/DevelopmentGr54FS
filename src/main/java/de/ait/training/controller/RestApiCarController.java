@@ -1,11 +1,11 @@
 package de.ait.training.controller;
 
 import de.ait.training.model.Car;
+import de.ait.training.repository.CarRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.SpringApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,23 +27,13 @@ import java.util.List;
 @RequestMapping("/api/cars")
 public class RestApiCarController {
 
-    Car carOne = new Car(1, "black", "BMW", 25000);
-    Car carTwo = new Car(2, "green", "AUDI A4", 15000);
-    Car carThree = new Car(3, "white", "MB A220", 18000);
-    Car carFour = new Car(4, "red", "Ferrari", 250000);
+    private CarRepository carRepository;
 
-    List<Car> cars = new ArrayList<>();
-
-    /**
-     * конструктор который будет полюбому вызываться при старте приложения,
-     * но как только остановится все данные будут потеряны
-     */
-    public RestApiCarController() {
-        cars.add(carOne);
-        cars.add(carTwo);
-        cars.add(carThree);
-        cars.add(carFour);
+    public RestApiCarController(CarRepository carRepository) {
+        this.carRepository = carRepository;
     }
+
+//    List<Car> cars = new ArrayList<>();
 
     /**
      * GET/api/cars
@@ -55,7 +45,7 @@ public class RestApiCarController {
      */
     @GetMapping
     Iterable<Car> getCars() {
-        return cars;
+        return carRepository.findAll();
     }
 
     /**
@@ -73,15 +63,11 @@ public class RestApiCarController {
             }
     )
 
-    /**
-     * GET /api/cars/{color}
-     *
-     * @return Возвращает список всех автомобилей заданного цвета
-     */
-    @GetMapping("/{color}")
+    @GetMapping("/color/{color}")
     ResponseEntity<List<Car>> getCarsByColor(@PathVariable String color) {
-        List<Car> resultCarsColor = cars.stream()
-                .filter(car -> car.getColor().equals(color))
+        List<Car> resultCarsColor = carRepository.findCarByColorIgnoreCase(color)
+                .stream()
+                .filter(car -> car.getColor().equalsIgnoreCase(color))
                 .toList();
 
         if (resultCarsColor.isEmpty()) {
@@ -91,6 +77,97 @@ public class RestApiCarController {
             log.info("Found {} cars with color: {}", resultCarsColor.size(), color);
             return new ResponseEntity<>(resultCarsColor, HttpStatus.OK);
         }
+    }
+
+    /**
+     * получаем все автомобили, у которых price находится включительно между min и
+     * max.
+     * Если max < min — вернуть пустой список.
+     * @param min
+     * @param max
+     * @return список автомобилей с ценой в указанном диапазоне или пустой список
+     */
+    @Operation(
+            summary = "Get cars by price",
+            description = "Returns a list of cars filtered by price between min and max value or empty list(if max < min)",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Cars found successfully"),
+                    @ApiResponse(responseCode = "404", description = "If no cars found, returns empty list")
+            }
+    )
+
+    @GetMapping("/price/between/{min}/{max}")
+    ResponseEntity<List<Car>> getCarsByPriceBetween(@PathVariable Integer min, @PathVariable Integer max) {
+        List<Car> resultByPrice = carRepository.findByPriceBetween(min,max)
+                .stream()
+                .filter(car -> car.getPrice() >=min && car.getPrice() <=max)
+                .toList();
+        if (min > max) {
+            log.warn("Invalid price between {} and {}", min, max);
+            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND);
+        }else {
+            log.info("Found {} cars with price between {} and {}", resultByPrice, max, min);
+        }
+        return new ResponseEntity<>(resultByPrice, HttpStatus.OK);
+    }
+
+    /**
+     * получаем все автомобили, у которых price ниже max
+     *
+     * @param max
+     * @return список автомобилей с ценой ниже максимальной
+     */
+    @Operation(
+            summary = "Get cars by price under max",
+            description = "Returns a list of cars filtered by price with price under max",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Cars found successfully"),
+                    @ApiResponse(responseCode = "404", description = "If no cars found, returns empty list")
+            }
+    )
+
+    @GetMapping("/price/under/{max}")
+    ResponseEntity<List<Car>> getCarsByPriceUnderMax(@PathVariable Integer max) {
+        List<Car> resultByPriceUnderMax = carRepository.findByPriceLessThanEqual(max)
+                .stream()
+                .filter(car -> car.getPrice() <= max)
+                .toList();
+        if (max > resultByPriceUnderMax.size()) {
+            log.warn("Invalid price under max {}", max);
+        } else {
+            log.info("Found {} cars with price under max", max);
+        }
+        return new ResponseEntity<>(resultByPriceUnderMax, HttpStatus.OK);
+    }
+
+
+    /**
+     * получаем все автомобили, у которых price выше min
+     *
+     * @param min
+     * @return список автомобилей с ценой выше минимальной
+     */
+    @Operation(
+            summary = "Get cars by price over min",
+            description = "Returns a list of cars filtered by price with price over min",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Cars found successfully"),
+                    @ApiResponse(responseCode = "404", description = "If no cars found, returns empty list")
+            }
+    )
+
+    @GetMapping("/price/over/{min}")
+    ResponseEntity <List<Car>> getCarsByPriceOverMin(@PathVariable Integer min) {
+        List<Car> resultByPriceOverMin = carRepository.findByPriceGreaterThanEqual(min)
+                .stream()
+                .filter(car -> car.getPrice() >=min)
+                .toList();
+        if (min > resultByPriceOverMin.size()) {
+            log.warn("Invalid price over min {}", min);
+        }else  {
+            log.info("Found {} cars with price over min", min);
+        }
+        return new ResponseEntity<>(resultByPriceOverMin, HttpStatus.OK);
     }
 
     /**
@@ -117,13 +194,13 @@ public class RestApiCarController {
          * и передаёт его в параметр car.*/
         if (car.getId() <= 0) {
             log.error("Car id must be greater than zero");
-            Car errorCar = new Car(9999, "000", "000", 9999);
+            Car errorCar = new Car("000", "000", 9999);
 
             return errorCar;
             /**Spring Boot автоматически сериализует его в JSON и отправит как ответ на POST-запрос.
              возвращаем пустышку(заглушку) но можно было бы вернуть null*/
         }
-        cars.add(car);
+        carRepository.save(car);
         log.info("Car posted successfully");
         return car;
     }
@@ -141,21 +218,17 @@ public class RestApiCarController {
      @RequestBody Car car -внутри самого запроса несем изменения целиком*/
     ResponseEntity<Car> putCar(@PathVariable long id, @RequestBody Car car) {
         /** задание: если car с этим Id не найден, то мы сохраняем его как новый с этим Id*/
-        int carIndex = -1;
-        for (Car carInList : cars) {
-            if (carInList.getId() == id) {
-                /**тогда когда нашли (например с индексом 25)нужно зафиксировать индекс автомобиля
-                 чтобы не путать Id и Index, по Id нашли -> смотрим индекс(они могут отличаться на 1)
-                 и записываем уже по индексу на это место*/
-                carIndex = cars.indexOf(carInList);
-                /** берем лист cars и вызываем метод set: carIndex - это на какой позиции стоит наш элемент,
-                 car - это что записать на эту позицию вместо того что там есть*/
-                cars.set(carIndex, car);
-                log.info("Car id " + carInList.getId() + " has been updated");
-            }
-        }
 
-        return (carIndex == -1)
+        Car foundCar = carRepository.findById(id).orElse(null);
+
+       if(foundCar == null) {
+           log.info("Car not found with id {}", id);
+       }else {
+           log.info("Found car with id {}", id);
+           carRepository.save(car);
+       }
+
+        return (foundCar == null)
                 /** если carIndex не поменялся
                  ResponseEntity небольшой контейнер где мы можем модернизировать содержимое ответа и статус ответа
                  (а не просто один ответ в виде 200 или ОК)
@@ -173,7 +246,6 @@ public class RestApiCarController {
     @DeleteMapping("/{id}")
     void deleteCar(@PathVariable long id) {
         log.info("Delete car with id {}", id);
-        /** предикат: удалить если внутри совпал Id*/
-        cars.removeIf(car -> car.getId() == id);
+        carRepository.deleteById(id);
     }
 }

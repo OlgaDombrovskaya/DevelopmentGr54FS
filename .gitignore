@@ -53,3 +53,5 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 .project
 .classpath
+.DS_Store
+.idea

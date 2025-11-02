@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Data
-@NoArgsConstructor
-@Entity
+@NoArgsConstructor //фреймворку джексон нужен этот конструктор
+@Entity //класс имеющий в базе данных свою таблицу
 @Table(name = "cars")
 public class Car {
 

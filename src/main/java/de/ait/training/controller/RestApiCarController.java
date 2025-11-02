@@ -64,12 +64,14 @@ public class RestApiCarController {
             }
     )
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     Car postCar(@RequestBody Car car) {
-        if (car.getId() <= 0) {
-            log.error("Car id must be greater than zero");
-            Car errorCar = new Car("000", "000", 9999);
-            return errorCar;
-        }
+        car.setId(null);
+//        if (car.getId() <= 0) {
+//            log.error("Car id must be greater than zero");
+//            Car errorCar = new Car("000", "000", 9999);
+//            return errorCar;
+//        }
         carRepository.save(car);
         log.info("Car posted successfully");
         return car;

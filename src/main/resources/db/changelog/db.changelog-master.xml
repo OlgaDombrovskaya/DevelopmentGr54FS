@@ -1,11 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="
                      http://www.liquibase.org/xml/ns/dbchangelog
                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <include file="db/changelog/db.changelog-1.0-create-cars.xml"/>
-    <include file="db/changelog/db.changelog-2.0-add-column-year.xml"/>
-    <include file="db/changelog/db.changelog-3.0-add-column-engine_type.xml"/>
+    <include file="db.changelog-1.0-create-cars.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2.0-add-column-year.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-3.0-add-column-engine_type.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-4.0-insert-cars.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-5.0-add-column-image_url.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

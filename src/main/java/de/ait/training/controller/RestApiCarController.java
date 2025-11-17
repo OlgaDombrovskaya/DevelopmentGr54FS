@@ -2,6 +2,7 @@ package de.ait.training.controller;
 
 import de.ait.training.model.Car;
 import de.ait.training.repository.CarRepository;
+import de.ait.training.service.CarService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,23 +22,11 @@ import java.util.List;
 public class RestApiCarController {
 
     private final CarRepository carRepository;
+    private final CarService service;
 
-    /*Car carOne = new Car(1, "black", "BMW x5", 25000);
-    Car carTwo = new Car(2, "green", "Audi A4", 15000);
-    Car carThree = new Car(3, "white", "MB A220", 18000);
-    Car carFour = new Car(4, "red", "Ferrari", 250000);
-
-    List<Car> cars = new ArrayList<>();
-
-    public RestApiCarController() {
-        cars.add(carOne);
-        cars.add(carTwo);
-        cars.add(carThree);
-        cars.add(carFour);
-    }*/
-
-    public RestApiCarController(CarRepository carRepository) {
+    public RestApiCarController(CarRepository carRepository, CarService carService) {
         this.carRepository = carRepository;
+        this.service = carService;
     }
 
 
@@ -171,5 +161,10 @@ public class RestApiCarController {
         }
         log.info("Found {} cars with price greater than {}", filteredCars.size(), min);
         return new ResponseEntity<>(filteredCars, HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/add-image")
+    public void attachImage(@PathVariable Long id, @RequestParam MultipartFile file) {
+      service.attachImage(id, file);
     }
 }

@@ -22,12 +22,25 @@ public class Car {
     @Column(nullable = false)
     private double price;
 
-    @Column(nullable = false)
+    @Column(name = "engine_type")
+    private String engineType;
+
+    @Column(name = "year")
     private int year;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 
     public Car(String color, String model, double price) {
         this.color = color;
         this.model = model;
         this.price = price;
+    }
+
+    public Car(Long id, String engineType, int year, String imageUrl) {
+        this.id = id;
+        this.engineType = engineType;
+        this.year = year;
+        this.imageUrl = imageUrl;
     }
 }
